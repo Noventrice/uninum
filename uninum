@@ -1,0 +1,39 @@
+#!/usr/bin/perl -CSA
+
+use strict;
+use warnings;
+use Getopt::Std;
+#You can't use :loose dynamically.
+#See ./uniname for details.
+use charnames ':full';
+
+my %opts=();
+#-p: Prefix (eg U+, or 0x).
+getopts('p:', \%opts);
+my $prefix=$opts{'p'} // '';
+
+sub uninum {
+	my $arg=shift;
+	#If you can't find the unicode name, then false.
+	if(my $name=charnames::vianame(uc($arg)) or 0){
+		printf("%s%04X\n", $prefix, $name);
+	}else{
+		for ( 0 .. (length($arg)-1) ){
+			printf(
+				"%s%04X\n",
+				#ord works b/c the -CSA flag on the shebang.
+				$prefix, ord(substr($arg, $_, 1))
+			);
+		}
+	}
+}
+
+if(-t STDIN){
+	for(@ARGV){
+		uninum($_);
+	}
+}else{
+	while(<>){
+		uninum($_);
+	}
+}
